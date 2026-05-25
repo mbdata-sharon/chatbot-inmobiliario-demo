@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InmobiliaryAI · Motor de Inferencia Lógica</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            term: {
+              bg: '#0a0e14',
+              surface: '#161b22',
+              elevated: '#1c2128',
+              border: '#30363d',
+              text: '#c9d1d9',
+              soft: '#8b949e',
+              green: '#7ee787',
+              blue:  '#79c0ff',
+              purple:'#d2a8ff',
+              orange:'#ffa657',
+              red:   '#ff7b72',
+              yellow:'#ffd866'
+            }
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="h-screen overflow-hidden font-sans antialiased text-slate-900">
+
+  <!-- =================== TOPBAR =================== -->
+  <header class="topbar h-14 px-6 flex items-center justify-between
+                 bg-gradient-to-r from-term-bg via-[#0f1419] to-term-surface
+                 border-b border-term-border text-term-text">
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600
+                    flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>
+          </svg>
+        </div>
+        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-term-green ring-2 ring-term-bg animate-pulse"></span>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <h1 class="text-[15px] font-semibold tracking-tight text-white">
+          InmobiliaryAI
+        </h1>
+        <span class="text-[11px] font-mono text-term-soft">
+          motor_de_inferencia · lógica · conjuntos · bases_numéricas
+        </span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center gap-2 text-[11px] font-mono text-term-soft">
+        <span class="w-1.5 h-1.5 rounded-full bg-term-green animate-pulse"></span>
+        sesión activa
+      </div>
+      <button id="btn-flowchart" class="btn-flowchart flex items-center gap-2 px-3.5 py-1.5 rounded-lg
+                                       border border-term-border text-term-soft text-xs font-mono
+                                       hover:border-term-blue hover:text-term-blue transition-colors">
+        <span>📋</span>
+        Ver Algoritmo (Flujo)
+      </button>
+      <button id="btn-reset" class="btn-reset flex items-center gap-2 px-3.5 py-1.5 rounded-lg
+                                    border border-term-border text-term-soft text-xs font-mono
+                                    hover:border-term-red hover:text-term-red transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>
+        </svg>
+        Reiniciar Demo
+      </button>
+    </div>
+  </header>
+
+  <!-- =================== DASHBOARD =================== -->
+  <main class="dashboard grid h-[calc(100vh-56px)]" style="grid-template-columns: 60% 40%;">
+
+    <!-- ============ COLUMNA IZQUIERDA · CHAT ============ -->
+    <section class="chat-panel relative flex flex-col h-full overflow-hidden
+                    bg-gradient-to-br from-slate-50 via-white to-slate-100 border-r border-slate-200">
+
+      <!-- Chat header -->
+      <div class="chat-header relative z-10 flex items-center gap-3 px-5 py-3
+                  bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="relative">
+          <div class="avatar w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600
+                      flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>
+            </svg>
+          </div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+        </div>
+        <div class="flex flex-col leading-tight">
+          <strong class="text-sm font-semibold text-slate-900">InmoBot</strong>
+          <span class="status text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            En línea · responde al instante
+          </span>
+        </div>
+        <div class="ml-auto flex gap-1.5 text-slate-400">
+          <button class="p-1.5 rounded-md hover:bg-slate-100 transition" title="Buscar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+          <button class="p-1.5 rounded-md hover:bg-slate-100 transition" title="Más">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div id="chat-messages" class="chat-messages flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-2.5">
+        <!-- Burbujas inyectadas por JS -->
+      </div>
+
+      <!-- Input zone -->
+      <div id="chat-input-zone" class="chat-input-zone flex items-center gap-2.5 px-5 py-4 min-h-[78px]
+                                       bg-white border-t border-slate-200 flex-wrap">
+        <!-- Inputs dinámicos -->
+      </div>
+    </section>
+
+    <!-- ============ COLUMNA DERECHA · MOTOR DE INFERENCIA ============ -->
+    <aside class="math-panel flex flex-col h-full overflow-hidden bg-term-bg text-term-text font-mono">
+
+      <!-- Code-editor style header -->
+      <div class="math-panel-header flex items-center gap-2 px-4 py-2.5
+                  bg-term-surface border-b border-term-border text-xs text-term-soft">
+        <div class="flex gap-1.5">
+          <span class="dot dot-red w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span>
+          <span class="dot dot-yellow w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span>
+          <span class="dot dot-green w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span>
+        </div>
+        <span class="ml-3 prompt-symbol text-term-green font-bold">$</span>
+        <span class="panel-title">motor_de_inferencia.exec</span>
+        <span class="ml-auto flex items-center gap-2 text-[10px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-term-green animate-pulse"></span>
+          running
+        </span>
+      </div>
+
+      <!-- Panel content -->
+      <div class="math-panel-content flex-1 overflow-y-auto px-5 py-5 space-y-5">
+
+        <!-- ===== FASE 1 ===== -->
+        <section class="phase phase-card group" id="phase-1">
+          <h2 class="phase-title">
+            <span class="phase-num">01</span>
+            Lógica Proposicional
+            <span class="lock-badge">🔒 bloqueado</span>
+            <span class="ml-auto text-[10px] font-normal normal-case tracking-normal text-term-soft">
+              v = p ∧ (q ∨ r)
+            </span>
+          </h2>
+
+          <div class="phase-block">
+            <div class="block-label">// Proposiciones</div>
+            <div class="propositions">
+              <div class="prop" id="prop-p">
+                <span class="prop-var">p</span>
+                <span class="prop-desc">Presupuesto ≥ $150.000.000</span>
+                <span class="prop-val">?</span>
+              </div>
+              <div class="prop" id="prop-q">
+                <span class="prop-var">q</span>
+                <span class="prop-desc">Tiene crédito pre-aprobado</span>
+                <span class="prop-val">?</span>
+              </div>
+              <div class="prop" id="prop-r">
+                <span class="prop-var">r</span>
+                <span class="prop-desc">Tiene dinero de contado</span>
+                <span class="prop-val">?</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="phase-block">
+            <div class="block-label">// Fórmula de viabilidad</div>
+            <div class="formula formula-static">
+              <span class="fx-var">v</span>
+              <span class="fx-op">=</span>
+              <span class="fx-var">p</span>
+              <span class="fx-op">∧</span>
+              <span class="fx-paren">(</span>
+              <span class="fx-var">q</span>
+              <span class="fx-op">∨</span>
+              <span class="fx-var">r</span>
+              <span class="fx-paren">)</span>
+            </div>
+          </div>
+
+          <div class="phase-block law-block">
+            <div class="block-label law-label">// Aplicando Ley Distributiva:</div>
+            <div class="formula formula-static formula-law">
+              <span class="fx-var">v</span>
+              <span class="fx-op">=</span>
+              <span class="fx-paren">(</span>
+              <span class="fx-var">p</span>
+              <span class="fx-op">∧</span>
+              <span class="fx-var">q</span>
+              <span class="fx-paren">)</span>
+              <span class="fx-op">∨</span>
+              <span class="fx-paren">(</span>
+              <span class="fx-var">p</span>
+              <span class="fx-op">∧</span>
+              <span class="fx-var">r</span>
+              <span class="fx-paren">)</span>
+            </div>
+            <div class="formula formula-eval" id="formula-eval-dist">
+              <span class="fx-var">v</span>
+              <span class="fx-op">=</span>
+              <span class="fx-pending">esperando datos…</span>
+            </div>
+            <div class="law-note">
+              ✓ Ambas formas son <strong>lógicamente equivalentes</strong> · Ley Distributiva del Álgebra Booleana
+            </div>
+          </div>
+
+          <div class="phase-block">
+            <div class="block-label">// Evaluación en vivo</div>
+            <div class="formula formula-eval" id="formula-eval">
+              <span class="fx-var">v</span>
+              <span class="fx-op">=</span>
+              <span class="fx-pending">esperando datos…</span>
+            </div>
+            <div class="verdict" id="verdict">
+              <span class="verdict-label">Resultado:</span>
+              <span class="verdict-value" id="verdict-value">—</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== FASE 2 ===== -->
+        <section class="phase phase-card phase-locked" id="phase-2">
+          <h2 class="phase-title">
+            <span class="phase-num">02</span>
+            Teoría de Conjuntos
+            <span class="lock-badge">🔒 bloqueado</span>
+            <span class="ml-auto text-[10px] font-normal normal-case tracking-normal text-term-soft">
+              R = A ∩ B ∩ C
+            </span>
+          </h2>
+
+          <div class="phase-block">
+            <div class="block-label">// Universo</div>
+            <div class="set-line">
+              <span class="set-name">U</span>
+              <span class="fx-op">=</span>
+              <span class="set-body">{ i₁, i₂, i₃, … , i₃₀ }</span>
+              <span class="set-card">|U| = <strong>30</strong></span>
+            </div>
+          </div>
+
+          <div class="phase-block">
+            <div class="block-label">// Subconjuntos seleccionados</div>
+            <div class="set-line" id="set-A">
+              <span class="set-name">A</span>
+              <span class="fx-op">=</span>
+              <span class="set-body">{ i ∈ U : ciudad(i) = <em class="set-param">?</em> }</span>
+              <span class="set-card" id="card-A">|A| = —</span>
+            </div>
+            <div class="set-line" id="set-B">
+              <span class="set-name">B</span>
+              <span class="fx-op">=</span>
+              <span class="set-body">{ i ∈ U : tipo(i) = <em class="set-param">?</em> }</span>
+              <span class="set-card" id="card-B">|B| = —</span>
+            </div>
+            <div class="set-line" id="set-C">
+              <span class="set-name">C</span>
+              <span class="fx-op">=</span>
+              <span class="set-body">{ i ∈ U : precio(i) ≤ <em class="set-param">?</em> }</span>
+              <span class="set-card" id="card-C">|C| = —</span>
+            </div>
+          </div>
+
+          <div class="phase-block venn-block">
+            <div class="block-label">// Diagrama de Venn · A ∩ B ∩ C</div>
+            <div class="venn-wrapper">
+              <svg class="venn" viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <filter id="glow"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                  <radialGradient id="gradA" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff7b72" stop-opacity="0.5"/><stop offset="100%" stop-color="#ff7b72" stop-opacity="0"/></radialGradient>
+                  <radialGradient id="gradB" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#7ee787" stop-opacity="0.5"/><stop offset="100%" stop-color="#7ee787" stop-opacity="0"/></radialGradient>
+                  <radialGradient id="gradC" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#79c0ff" stop-opacity="0.5"/><stop offset="100%" stop-color="#79c0ff" stop-opacity="0"/></radialGradient>
+                </defs>
+                <circle id="venn-A" cx="115" cy="105" r="78" class="venn-circle venn-A"/>
+                <circle id="venn-B" cx="205" cy="105" r="78" class="venn-circle venn-B"/>
+                <circle id="venn-C" cx="160" cy="180" r="78" class="venn-circle venn-C"/>
+                <text x="62"  y="82"  class="venn-label">A</text>
+                <text x="252" y="82"  class="venn-label">B</text>
+                <text x="160" y="245" class="venn-label">C</text>
+                <text id="venn-intersection-count" x="160" y="148" class="venn-intersection">∅</text>
+              </svg>
+              <div class="venn-legend">
+                <div class="legend-item"><span class="legend-dot bg-term-red"></span>A · ciudad</div>
+                <div class="legend-item"><span class="legend-dot bg-term-green"></span>B · tipo</div>
+                <div class="legend-item"><span class="legend-dot bg-term-blue"></span>C · precio</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="phase-block">
+            <div class="block-label">// Operación de intersección</div>
+            <div class="formula formula-eval" id="intersection-formula">
+              <span class="set-name">R</span>
+              <span class="fx-op">=</span>
+              <span class="set-name">A</span>
+              <span class="fx-op">∩</span>
+              <span class="set-name">B</span>
+              <span class="fx-op">∩</span>
+              <span class="set-name">C</span>
+              <span class="fx-op">=</span>
+              <span class="fx-pending" id="intersection-result">∅</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== FASE 3 ===== -->
+        <section class="phase phase-card phase-locked" id="phase-3">
+          <h2 class="phase-title">
+            <span class="phase-num">03</span>
+            Representación Numérica
+            <span class="lock-badge">🔒 bloqueado</span>
+            <span class="ml-auto text-[10px] font-normal normal-case tracking-normal text-term-soft">
+              DEC · BIN · HEX
+            </span>
+          </h2>
+
+          <div class="phase-block">
+            <div class="block-label">// Total encontrados</div>
+            <div class="count-row">
+              <div class="count-card count-card-green">
+                <span class="count-base">DEC</span>
+                <span class="count-val" id="total-dec">—</span>
+              </div>
+              <div class="count-card count-card-blue">
+                <span class="count-base">BIN</span>
+                <span class="count-val" id="total-bin">—</span>
+              </div>
+              <div class="count-card count-card-orange">
+                <span class="count-base">HEX</span>
+                <span class="count-val" id="total-hex">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="phase-block">
+            <div class="block-label">// IDs convertidos · DEC → BIN → HEX</div>
+            <div class="table-wrap">
+              <table class="bases-table" id="bases-table">
+                <thead>
+                  <tr>
+                    <th>ID (DEC)</th>
+                    <th>BIN</th>
+                    <th>HEX</th>
+                  </tr>
+                </thead>
+                <tbody id="bases-tbody">
+                  <tr><td colspan="3" class="td-empty">— sin datos —</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="phase-block">
+            <div class="block-label">// Log de ejecución</div>
+            <div class="log" id="log"></div>
+          </div>
+        </section>
+
+      </div>
+    </aside>
+  </main>
+
+  <!-- =================== MODAL · ALGORITMO (FLUJO) =================== -->
+  <div id="flow-modal" class="flow-modal" aria-hidden="true" role="dialog" aria-labelledby="flow-modal-title">
+    <div class="flow-modal-backdrop" data-close-modal></div>
+    <div class="flow-modal-dialog">
+      <div class="flow-modal-header">
+        <div class="flex items-center gap-2">
+          <span class="text-term-blue">📋</span>
+          <h3 id="flow-modal-title" class="font-mono text-sm font-semibold text-white tracking-tight">
+            Algoritmo · Diagrama de Flujo + Pseudocódigo
+          </h3>
+        </div>
+        <button class="flow-modal-close" data-close-modal aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flow-modal-body">
+        <!-- Columna izquierda: imagen del diagrama -->
+        <div class="flow-modal-image-col">
+          <div class="block-label">// Diagrama de Flujo (visual)</div>
+          <div class="flowchart-frame">
+            <img src="diagrama-flujo.png"
+                 alt="Diagrama de flujo del algoritmo del Chatbot Inmobiliario"
+                 class="flowchart-img"
+                 id="flowchart-img" />
+          </div>
+        </div>
+
+        <!-- Columna derecha: pseudocódigo -->
+        <div class="flow-modal-code-col">
+          <div class="block-label">// Pseudocódigo · IF / THEN</div>
+          <pre class="flow-pseudo"><code><span class="pc-kw">INICIO</span>
+
+  <span class="pc-kw">LEER</span> presupuesto, credito, contado
+
+  p <span class="pc-op">←</span> (presupuesto <span class="pc-op">≥</span> <span class="pc-num">150_000_000</span>)
+  q <span class="pc-op">←</span> credito
+  r <span class="pc-op">←</span> contado
+
+  <span class="pc-cm">// Ley Distributiva: p ∧ (q ∨ r) ≡ (p ∧ q) ∨ (p ∧ r)</span>
+  v <span class="pc-op">←</span> p <span class="pc-kw">AND</span> (q <span class="pc-kw">OR</span> r)
+
+  <span class="pc-kw">IF</span> v <span class="pc-op">=</span> <span class="pc-bool">VERDADERO</span> <span class="pc-kw">THEN</span>
+      <span class="pc-cm">// Modus Ponens: premisas válidas → conclusión</span>
+      <span class="pc-kw">IMPRIMIR</span> <span class="pc-str">"Cliente Viable (VIP)"</span>
+      <span class="pc-kw">DESBLOQUEAR</span> Fase 2
+
+      <span class="pc-kw">LEER</span> ciudad, tipo, precio_max
+
+      A <span class="pc-op">←</span> { i <span class="pc-op">∈</span> U : ciudad(i) <span class="pc-op">=</span> ciudad }
+      B <span class="pc-op">←</span> { i <span class="pc-op">∈</span> U : tipo(i)   <span class="pc-op">=</span> tipo   }
+      C <span class="pc-op">←</span> { i <span class="pc-op">∈</span> U : precio(i) <span class="pc-op">≤</span> precio_max }
+
+      R <span class="pc-op">←</span> A <span class="pc-op">∩</span> B <span class="pc-op">∩</span> C
+      <span class="pc-kw">DESBLOQUEAR</span> Fase 3
+
+      <span class="pc-kw">PARA CADA</span> id <span class="pc-kw">EN</span> R <span class="pc-kw">HACER</span>
+          bin <span class="pc-op">←</span> id.toString(<span class="pc-num">2</span>)
+          hex <span class="pc-op">←</span> id.toString(<span class="pc-num">16</span>).toUpperCase()
+          <span class="pc-kw">IMPRIMIR</span> id, bin, hex
+      <span class="pc-kw">FIN PARA</span>
+
+  <span class="pc-kw">ELSE</span>
+      <span class="pc-kw">IMPRIMIR</span> <span class="pc-str">"Cliente NO Viable"</span>
+      <span class="pc-kw">DETENER</span>
+  <span class="pc-kw">FIN IF</span>
+
+<span class="pc-kw">FIN</span></code></pre>
+        </div>
+      </div>
+
+      <div class="flow-modal-footer">
+        <button class="btn-modal-close" data-close-modal>Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
