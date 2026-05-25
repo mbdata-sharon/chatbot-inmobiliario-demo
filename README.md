@@ -71,4 +71,4 @@ Disponible en el modal del dashboard (botón **📋 Ver Algoritmo (Flujo)** en e
 ## 👥 Autores
 
 - Sharon Leon ([@mbdata-sharon](https://github.com/mbdata-sharon))
-- Brandow Bruslyx Domínguez ([@BrandowBruslyXD](https://github.com/BrandowBruslyXD))
+
